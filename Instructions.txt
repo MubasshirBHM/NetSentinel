@@ -1,0 +1,150 @@
+=====================================================
+🔐 NetSentinel – All-in-One Setup & User Manual
+=====================================================
+
+📌 OVERVIEW
+-----------------------------------------------------
+NetSentinel is a Python-based network monitoring and intrusion detection system.
+It is designed for Wi-Fi networks to:
+✔️ Detect unauthorized devices  
+✔️ Monitor DNS & HTTP traffic  
+✔️ Alert for insecure connections, DoS, and MITM attacks  
+✔️ Use Firebase for remote alerts and commands  
+✔️ Provide a real-time GUI dashboard for users
+
+=====================================================
+🛠️ SYSTEM REQUIREMENTS
+-----------------------------------------------------
+✔️ OS: Linux (Kali Linux / Ubuntu preferred)  
+✔️ Python: 3.8+  
+✔️ Must run as **root** (sudo)  
+✔️ Internet connection (for Firebase and geolocation)  
+✔️ Wi-Fi adapter that supports monitor mode  
+✔️ Preinstalled tools:
+   - tcpdump
+   - hostapd
+   - conntrack
+   - aircrack-ng
+
+=====================================================
+📦 INSTALLATION GUIDE
+-----------------------------------------------------
+Follow these steps to install everything automatically.
+
+1. Place setup.sh in the project root folder.
+
+2. Run these commands in the terminal:
+   chmod +x setup.sh
+   ./setup.sh
+
+3. The script will:
+   ✔️ Install all required system packages  
+   ✔️ Install Python libraries via pip  
+   ✔️ Create fakessid.sh and stopfakessid.sh  
+   ✔️ Make scripts executable  
+   ✔️ Create necessary folders like visit_logs/
+
+=====================================================
+📜 setup.sh SCRIPT CONTENT (AUTOMATED INSTALL)
+-----------------------------------------------------
+#!/bin/bash
+
+echo "🔧 Installing NetSentinel dependencies..."
+
+sudo apt update
+sudo apt install -y python3 python3-pip python3-venv tcpdump aircrack-ng hostapd conntrack net-tools
+
+pip3 install --upgrade pip
+pip3 install pyrebase4 scapy requests flask pandas schedule matplotlib tk colorama pyfiglet rich
+
+echo "✅ Setting up script permissions..."
+
+if [ ! -f "./fakessid.sh" ]; then
+    echo -e '#!/bin/bash\nairebase-ng -e "FreeWiFi" -c 6 wlan0mon' > fakessid.sh
+fi
+if [ ! -f "./stopfakessid.sh" ]; then
+    echo -e '#!/bin/bash\npkill airbase-ng' > stopfakessid.sh
+fi
+
+chmod +x fakessid.sh stopfakessid.sh
+mkdir -p visit_logs
+
+echo "✅ Setup complete. Run with: sudo python3 kali1.py"
+
+=====================================================
+🚀 RUNNING THE TOOL
+-----------------------------------------------------
+After setup, launch the program using:
+
+sudo python3 kali1.py
+
+✅ Required to run with sudo for network and iptables access.  
+✅ A GUI window will appear with tabs for devices, alerts, DNS, and DoS status.
+
+=====================================================
+🔥 HOTSPOT SIMULATION SCRIPTS
+-----------------------------------------------------
+- fakessid.sh – Starts a fake open Wi-Fi (e.g., "FreeWiFi")
+- stopfakessid.sh – Stops the fake SSID
+
+These scripts are used to test detection features (MITM or rogue AP).
+
+They are created automatically by the setup.sh script.
+
+=====================================================
+🧠 FEATURES
+-----------------------------------------------------
+✔️ Detect and log every new device  
+✔️ Show popup with allow/block buttons  
+✔️ Allow/block internet using iptables  
+✔️ Detect DoS attack patterns (ICMP, SYN, UDP floods)  
+✔️ Detect MITM (ARP & MAC spoofing)  
+✔️ Monitor DNS and HTTP activity  
+✔️ Push logs to Firebase  
+✔️ Receive Firebase-based remote commands (start-fake, stop-fake)  
+✔️ Email alerts for critical actions  
+✔️ Real-time dashboard with GUI (Tkinter)
+
+=====================================================
+🗂️ PROJECT FILE STRUCTURE
+-----------------------------------------------------
+NetSentinel/
+├── kali1.py               - Main application (GUI + backend)
+├── firebase_config.py     - Firebase integration
+├── fakessid.sh            - Fake SSID starter
+├── stopfakessid.sh        - Fake SSID stopper
+├── insecure_sites.txt     - List of suspicious domains
+├── allowed_macs.txt       - List of allowed devices
+├── blocked_macs.txt       - List of blocked devices
+├── oui.txt                - MAC address vendor lookup
+├── visit_logs/            - Folder where logs are stored
+├── setup.sh               - Auto installer script
+
+=====================================================
+📧 FIREBASE INTEGRATION
+-----------------------------------------------------
+- Firebase Realtime DB is used for:
+  - Remote control (e.g., block, allow, start-fake)
+  - Device and attack log storage
+- Credentials are stored in firebase_config.py
+- Auto pushes logs such as:
+  - DNS queries
+  - HTTP visits
+  - Alerts (DoS, MITM, unauthorized device)
+
+=====================================================
+👤 AUTHOR & LICENSE
+-----------------------------------------------------
+Author: M.H.D. Mubasshir  
+Tool Version: 1.0  
+License: For educational and internal use only  
+GitHub: https://github.com/[your-username]/NetSentinel
+
+=====================================================
+✅ TIPS
+-----------------------------------------------------
+- Always run as sudo
+- Always test using a Wi-Fi adapter that supports monitor mode
+- Review visit_logs/ for local logs if Firebase is unreachable
+
+=====================================================
