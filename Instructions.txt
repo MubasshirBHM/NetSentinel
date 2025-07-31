@@ -133,14 +133,6 @@ NetSentinel/
   - Alerts (DoS, MITM, unauthorized device)
 
 =====================================================
-👤 AUTHOR & LICENSE
------------------------------------------------------
-Author: M.H.D. Mubasshir  
-Tool Version: 1.0  
-License: For educational and internal use only  
-GitHub: https://github.com/[your-username]/NetSentinel
-
-=====================================================
 ✅ TIPS
 -----------------------------------------------------
 - Always run as sudo
