@@ -38,98 +38,96 @@ It allows non-technical users to set up a hotspot, monitor connected devices, ap
 ---
 
 ## 📂 Project Structure
-├── firebase_config.py             # Firebase integration & logging/n
-├── kali_modified.py               # Main GUI + monitoring/n
-├── realtime_blocklist_listener.py # Syncs blocked domains to dnsmasq
-├── oui.txt                        # MAC prefix → vendor database
-├── wifi.lst                       # SSID list for fake AP (optional)
-├── Packages_Installer.sh          # Installer (system deps + Python venv)
-├── configure_services.sh          # Configures hostapd/dnsmasq
-├── Start_Hotspot.sh               # Starts AP, iptables, NAT
-├── Run_Netsentinel.sh             # Runs realtime listener + GUI
-├── switchoff.sh                   # Stops AP services
-├── fakessid.sh / stopfakessid.sh  # Fake SSID broadcast (optional)
-└── README.md
+-├── firebase_config.py             # Firebase integration & logging/n
+-├── kali_modified.py               # Main GUI + monitoring/n
+-├── realtime_blocklist_listener.py # Syncs blocked domains to dnsmasq
+-├── oui.txt                        # MAC prefix → vendor database
+-├── wifi.lst                       # SSID list for fake AP (optional)
+-├── Packages_Installer.sh          # Installer (system deps + Python venv)
+-├── configure_services.sh          # Configures hostapd/dnsmasq
+-├── Start_Hotspot.sh               # Starts AP, iptables, NAT
+-├── Run_Netsentinel.sh             # Runs realtime listener + GUI
+-├── switchoff.sh                   # Stops AP services
+-├── fakessid.sh / stopfakessid.sh  # Fake SSID broadcast (optional)
+-└── README.md
 
 
-##⚙️ Installation
-Run the one-time installer to set up dependencies, Python venv, and configs:
+## ⚙️ Installation
+-Run the one-time installer to set up dependencies, Python venv, and configs:
 
-sudo bash Packages_Installer.sh
-sudo bash configure_services.sh
-This installs:
-  hostapd, dnsmasq, iptables, mdk4
-  Python venv with pyrebase4, scapy, requests
-  Prepares blocklist configs
+-sudo bash Packages_Installer.sh
+-sudo bash configure_services.sh
 
-##📡 Starting the Hotspot
-sudo bash Start_Hotspot.sh
-This sets the AP IP, NAT, firewall rules, and blocks all clients by default until approved.
-Stop hotspot:
-sudo bash switchoff.sh
-🖥️ Running NetSentinel
-sudo bash Run_Netsentinel.sh
-This will:
-Start realtime_blocklist_listener.py in background
-Launch kali_modified.py (Tkinter GUI)
+-This installs:
+-hostapd, dnsmasq, iptables, mdk4
+-Python venv with pyrebase4, scapy, requests
+-Prepares blocklist configs
 
-🔑 Firebase Setup
-Create a Firebase Realtime Database project
-Obtain the following values:
-apiKey
-authDomain
-databaseURL
-projectId
-storageBucket
-messagingSenderId
-appId
-Add them into firebase_config.py
+## 📡 Starting the Hotspot
+-sudo bash Start_Hotspot.sh :This sets the AP IP, NAT, firewall rules, and blocks all clients by default until approved.
+-Stop hotspot: sudo bash switchoff.sh
 
-By default, NetSentinel reads values directly from firebase_config.py.
+## 🖥️ Running NetSentinel
+-sudo bash Run_Netsentinel.sh
+-This will: Start realtime_blocklist_listener.py in background, Launch kali_modified.py (Tkinter GUI)
 
-📧 Email Alerts (Optional)
-Edit kali_modified.py with:
-EMAIL_SENDER (your Gmail)
-EMAIL_RECEIVER (list of recipients)
-REAL_APP_PASSWORD (Gmail App Password, not login password)
-EMAIL_SMTP_SERVER (default: smtp.gmail.com)
-EMAIL_SMTP_PORT (default: 465)
+## 🔑 Firebase Setup
+-Create a Firebase Realtime Database project
+-Obtain the following values:
+-apiKey
+-authDomain
+-databaseURL
+-projectId
+-storageBucket
+-messagingSenderId
+-appId
+-Add them into firebase_config.py
 
-##🔒 Device Approval/Blocking
-By default, all clients are blocked until approved
-Devices appear as pending in the GUI
-Approve/deny via GUI or Firebase UI
-Rules are applied via iptables and logged in Firebase
-Email alerts can notify on approval/denial
+-By default, NetSentinel reads values directly from firebase_config.py.
 
-##🛑 Blocklist Sync (DNSMASQ)
-realtime_blocklist_listener.py listens for changes under blocked_domains in Firebase
-Updates /etc/dnsmasq.d/blocklist.conf
-Restarts dnsmasq automatically
-🧪 Optional: Fake SSID Broadcasting
-⚠️ For lab testing only!
-Start fake SSID broadcast:
-sudo bash fakessid.sh
-Stop broadcast:
+## 📧 Email Alerts (Optional)
+-Edit kali_modified.py with:
+-EMAIL_SENDER (your Gmail)
+-EMAIL_RECEIVER (list of recipients)
+-REAL_APP_PASSWORD (Gmail App Password, not login password)
+-EMAIL_SMTP_SERVER (default: smtp.gmail.com)
+-EMAIL_SMTP_PORT (default: 465)
 
-sudo bash stopfakessid.sh
-📂 Logs & Useful Locations
-DHCP leases → /var/lib/misc/dnsmasq.leases
-Blocklist → /etc/dnsmasq.d/blocklist.conf
-Hostapd config → /etc/hostapd/hostapd.conf
-GUI + listener logs → console output
-Vendor DB → oui.txt
-🛠️ Troubleshooting (Quick Tips)
-dnsmasq fails → journalctl -xeu dnsmasq.service
-hostapd fails → ensure adapter supports AP mode (nl80211)
-No internet → verify NAT rules & uplink interface
-No pending devices → check Firebase keys & Python venv
-Email alerts fail → verify Gmail App Password & SMTP settings
+## 🔒 Device Approval/Blocking
+-By default, all clients are blocked until approved
+-Devices appear as pending in the GUI
+-Approve/deny via GUI or Firebase UI
+-Rules are applied via iptables and logged in Firebase
+-Email alerts can notify on approval/denial
 
-##⚡ Quick Start (TL;DR)
-sudo bash Packages_Installer.sh
-sudo bash configure_services.sh
-sudo bash Start_Hotspot.sh
-nano firebase_config.py   # add Firebase keys
-nano kali_modified.py     # (optional) set email alerts
-sudo bash Run_Netsentinel.sh
+## 🛑 Blocklist Sync (DNSMASQ)
+-realtime_blocklist_listener.py listens for changes under blocked_domains in Firebase
+-Updates /etc/dnsmasq.d/blocklist.conf
+-Restarts dnsmasq automatically
+
+## 🧪 Optional: Fake SSID Broadcasting
+-⚠️ For lab testing only!
+-Start fake SSID broadcast:  sudo bash fakessid.sh
+-Stop broadcast:  sudo bash stopfakessid.sh
+
+## 📂 Logs & Useful Locations
+-DHCP leases → /var/lib/misc/dnsmasq.leases
+-Blocklist → /etc/dnsmasq.d/blocklist.conf
+-Hostapd config → /etc/hostapd/hostapd.conf
+-GUI + listener logs → console output
+-Vendor DB → oui.txt
+
+## 🛠️ Troubleshooting (Quick Tips)
+-dnsmasq fails → journalctl -xeu dnsmasq.service
+-hostapd fails → ensure adapter supports AP mode (nl80211)
+-No internet → verify NAT rules & uplink interface
+-No pending devices → check Firebase keys & Python venv
+-Email alerts fail → verify Gmail App Password & SMTP settings
+
+## ⚡ Quick Start (TL;DR)
+-sudo bash Packages_Installer.sh
+-sudo bash configure_services.sh
+-sudo bash Start_Hotspot.sh
+-nano firebase_config.py   # add Firebase keys
+-nano kali_modified.py     # (optional) set email alerts
+-sudo bash Run_Netsentinel.sh
