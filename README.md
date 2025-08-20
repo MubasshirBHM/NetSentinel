@@ -38,8 +38,8 @@ It allows non-technical users to set up a hotspot, monitor connected devices, ap
 ---
 
 ## 📂 Project Structure
-├── firebase_config.py             # Firebase integration & logging
-├── kali_modified.py               # Main GUI + monitoring
+├── firebase_config.py             # Firebase integration & logging/n
+├── kali_modified.py               # Main GUI + monitoring/n
 ├── realtime_blocklist_listener.py # Syncs blocked domains to dnsmasq
 ├── oui.txt                        # MAC prefix → vendor database
 ├── wifi.lst                       # SSID list for fake AP (optional)
