@@ -1,0 +1,206 @@
+#define BLYNK_TEMPLATE_ID "TMPL64FXHmZ2M"
+#define BLYNK_TEMPLATE_NAME "Smart Door Lock"
+#define BLYNK_AUTH_TOKEN "c7AfKJL5as5PSdanWt-0TH3GJu3Lbeyq"
+
+
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+#include <Adafruit_Fingerprint.h>
+#include <Keypad.h>
+#include <EEPROM.h>
+
+// ==== WiFi & Blynk ====
+char auth[] = "c7AfKJL5as5PSdanWt-0TH3GJu3Lbeyq";
+char ssid[] = "SamsungA05s";
+char pass[] = "GalaxyMO2";
+
+// ==== Pins ====
+#define RELAY_PIN 13
+#define TAMPER_PIN 4 // example GPIO for vibration sensor
+
+// ==== Fingerprint ====
+HardwareSerial mySerial(2);
+Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+
+// ==== Keypad ====
+const byte ROWS = 4;
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+// Updated rows/cols with your pin map
+byte rowPins[ROWS] = {34, 35, 32, 33};
+byte colPins[COLS] = {25, 26, 27, 14};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+String inputPIN = "";
+String storedPIN = "1234"; // default, will load from EEPROM
+
+unsigned long unlockTime = 0;
+bool isUnlocked = false;
+
+// ==== Virtual Pins ====
+#define VPIN_UNLOCK V1
+#define VPIN_NOTIFICATION V0
+#define VPIN_PIN_MODE V2
+#define VPIN_FINGERPRINT_STATUS V3
+#define VPIN_ACTIVITY_LOG V4
+#define VPIN_ADD_FINGERPRINT V5
+#define VPIN_DELETE_FINGERPRINT V6
+#define VPIN_CHANGE_PIN V7
+#define VPIN_SHOW_IDS V8
+#define VPIN_TAMPER_ALERT V9
+
+void setup() {
+  Serial.begin(115200);
+  mySerial.begin(57600, SERIAL_8N1, 15, 2); // TX=2, RX=15
+  finger.begin(57600);
+
+  pinMode(RELAY_PIN, OUTPUT);
+  pinMode(TAMPER_PIN, INPUT);
+
+  EEPROM.begin(512);
+  loadPIN();
+
+  Blynk.begin(auth, ssid, pass);
+
+  if (finger.verifyPassword()) {
+    Serial.println("Found fingerprint sensor!");
+  } else {
+    Serial.println("Did not find fingerprint sensor :(");
+    while (1);
+  }
+}
+
+void loop() {
+  Blynk.run();
+  checkFingerprint();
+  checkKeypad();
+  checkTamper();
+
+  if (isUnlocked && (millis() - unlockTime > 30000)) {
+    lockDoor();
+  }
+}
+
+void checkFingerprint() {
+  if (finger.getImage() == FINGERPRINT_OK) {
+    if (finger.image2Tz() == FINGERPRINT_OK) {
+      if (finger.fingerSearch() == FINGERPRINT_OK) {
+        unlockDoor("Fingerprint");
+      } else {
+        Blynk.virtualWrite(VPIN_NOTIFICATION, "Fingerprint NOT recognized");
+      }
+    }
+  }
+}
+
+void checkKeypad() {
+  char key = keypad.getKey();
+  if (key) {
+    if (key == '#') {
+      if (inputPIN == storedPIN) {
+        unlockDoor("PIN");
+      } else {
+        Blynk.virtualWrite(VPIN_NOTIFICATION, "Wrong PIN");
+      }
+      inputPIN = "";
+    } else if (key == '*') {
+      inputPIN = "";
+    } else {
+      inputPIN += key;
+    }
+  }
+}
+
+void checkTamper() {
+  if (digitalRead(TAMPER_PIN) == HIGH) {
+    Blynk.virtualWrite(VPIN_NOTIFICATION, "Tamper Alert!");
+    Blynk.virtualWrite(VPIN_ACTIVITY_LOG, "Tamper Alert detected!");
+  }
+}
+
+void unlockDoor(String method) {
+  digitalWrite(RELAY_PIN, HIGH);
+  isUnlocked = true;
+  unlockTime = millis();
+  Blynk.virtualWrite(VPIN_NOTIFICATION, "Door Unlocked via " + method);
+  Blynk.virtualWrite(VPIN_ACTIVITY_LOG, "Unlocked: " + method + " at " + String(millis()));
+}
+
+void lockDoor() {
+  digitalWrite(RELAY_PIN, LOW);
+  isUnlocked = false;
+}
+
+void loadPIN() {
+  String pin = "";
+  for (int i = 0; i < 4; i++) {
+    pin += char(EEPROM.read(i));
+  }
+  if (pin != "") {
+    storedPIN = pin;
+  }
+}
+
+void savePIN(String newPIN) {
+  for (int i = 0; i < 4; i++) {
+    EEPROM.write(i, newPIN[i]);
+  }
+  EEPROM.commit();
+}
+
+BLYNK_WRITE(VPIN_ADD_FINGERPRINT) {
+  int id = param.asInt();
+  if (id > 0) {
+    fingerEnroll(id);
+  }
+}
+
+BLYNK_WRITE(VPIN_DELETE_FINGERPRINT) {
+  int id = param.asInt();
+  if (id > 0) {
+    finger.deleteModel(id);
+    Blynk.virtualWrite(VPIN_NOTIFICATION, "Deleted Finger ID " + String(id));
+  }
+}
+
+BLYNK_WRITE(VPIN_CHANGE_PIN) {
+  String newPIN = param.asStr();
+  savePIN(newPIN);
+  storedPIN = newPIN;
+  Blynk.virtualWrite(VPIN_NOTIFICATION, "PIN Changed Successfully");
+}
+
+void fingerEnroll(int id) {
+  int p = -1;
+  Blynk.virtualWrite(VPIN_NOTIFICATION, "Place finger...");
+  while (p != FINGERPRINT_OK) {
+    p = finger.getImage();
+    if (p == FINGERPRINT_OK) break;
+  }
+  finger.image2Tz(1);
+
+  Blynk.virtualWrite(VPIN_NOTIFICATION, "Remove finger...");
+  delay(2000);
+  while (p != FINGERPRINT_NOFINGER) {
+    p = finger.getImage();
+  }
+
+  Blynk.virtualWrite(VPIN_NOTIFICATION, "Place same finger again...");
+  while (p != FINGERPRINT_OK) {
+    p = finger.getImage();
+    if (p == FINGERPRINT_OK) break;
+  }
+  finger.image2Tz(2);
+  if (finger.createModel() == FINGERPRINT_OK) {
+    finger.storeModel(id);
+    Blynk.virtualWrite(VPIN_NOTIFICATION, "Finger enrolled ID " + String(id));
+  } else {
+    Blynk.virtualWrite(VPIN_NOTIFICATION, "Enroll Failed");
+  }
+}
