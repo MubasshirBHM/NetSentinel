@@ -61,9 +61,10 @@ sudo bash Start_Hotspot.sh
 nano firebase_config.py   # add Firebase keys
 nano kali_modified.py     # (optional) set email alerts
 sudo bash Run_Netsentinel.sh
-
-## ⚙️ Installation
 ```
+```
+## ⚙️ Installation
+
 Run the one-time installer to set up dependencies, Python venv, and configs:
 sudo bash Packages_Installer.sh
 sudo bash configure_services.sh
@@ -71,7 +72,7 @@ This installs:
 •	hostapd, dnsmasq, iptables, mdk4
 •	Python venv with pyrebase4, scapy, requests
 •	Prepares blocklist configs
-```
+
 ## 📡 Starting the Hotspot
 sudo bash Start_Hotspot.sh
 This sets the AP IP, NAT, firewall rules, and blocks all clients by default until approved.
