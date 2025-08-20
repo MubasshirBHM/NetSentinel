@@ -1,10 +1,5 @@
 # NetSentinel  
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)  
-![Platform](https://img.shields.io/badge/platform-Linux%20(Kali%2FUbuntu%2FDebian)-orange.svg)  
-![License](https://img.shields.io/badge/license-MIT-green.svg)  
-![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)  
-
 <img width="389" height="400" alt="net" src="https://github.com/user-attachments/assets/6e934768-6f49-4929-ade0-3bcffcb9e0b8" />
 
 NetSentinel is a **real-time Wi-Fi monitoring and control system** for Debian/Ubuntu/Kali.  
@@ -56,3 +51,12 @@ It allows non-technical users to set up a secure hotspot, monitor connected devi
 ├── switchoff.sh                   # Stops AP services
 ├── fakessid.sh / stopfakessid.sh  # Fake SSID broadcast (optional)
 └── README.md
+```
+## ⚡ Quick Start 
+```
+sudo bash Packages_Installer.sh
+sudo bash configure_services.sh
+sudo bash Start_Hotspot.sh
+nano firebase_config.py   # add Firebase keys
+nano kali_modified.py     # (optional) set email alerts
+sudo bash Run_Netsentinel.sh
