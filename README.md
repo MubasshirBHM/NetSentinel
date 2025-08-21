@@ -4,6 +4,7 @@
 
 NetSentinel is a **real-time Wi-Fi monitoring and control system** for Debian/Ubuntu/Kali.  
 It allows non-technical users to set up a secure hotspot, monitor connected devices, approve/block them, and sync DNS blocklists from Firebase.  
+Youtube : https://youtube.com/@netsentinel-i5h?si=gKT9SaIiMHF1x0UL
 
 ---
 
